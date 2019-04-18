@@ -20,13 +20,19 @@ namespace SimulationTool
 {
     public partial class SimulationTool : Form
     {
+        private Thread lampMakeThread, runnerThread;
         private string constr = ConfigurationManager.ConnectionStrings["DBconnection"].ConnectionString;
         private DataTable employeeTypes, confItems;
         private int WSId, EmpId, EmpTypeId, RunnerId;
         private List<Bin> bins;
         private int binCriticalAmount;
         private bool runnerAvailable = true;
-        
+
+        // FUNCTION : SimulationTool
+        // DESCRIPTION : Constructor for this class.
+        // PARAMETERS : object sender - event sender
+        //              EventArgs e - event args
+        // RETURNS : nothing
         public SimulationTool()
         {
             InitializeComponent();
@@ -131,13 +137,23 @@ namespace SimulationTool
         }
 
         // FUNCTION : startLampsButton_Click
-        // DESCRIPTION : Runs main loop for lamp creation process
+        // DESCRIPTION : Starts main loop for lamp creation process in a thread
         // PARAMETERS : object sender - event sender
         //              EventArgs e - event args
         // RETURNS : nothing
         private void startLampsButton_Click(object sender, EventArgs e)
         {
             startLampsButton.Enabled = false;
+            lampMakeThread = new Thread(MakeLamps);
+            lampMakeThread.Start();         
+        }
+
+        // FUNCTION : MakeLamps
+        // DESCRIPTION : Runs main loop for lamp creation process
+        // PARAMETERS : no params
+        // RETURNS : nothing
+        private void MakeLamps()
+        {
             int workerTimeMS = GetWorkerTimeMS();
             List<int> binIdsToRefil = new List<int>();
             List<KeyValuePair<string, string>> spParams = new List<KeyValuePair<string, string>>();
@@ -154,9 +170,11 @@ namespace SimulationTool
                 }
                 if (binIdsToRefil.Count != 0)
                 {
-                    Thread t = new Thread(() =>
+                    runnerThread = new Thread(() =>
                     {
+                        // wait while runner gets new bins (5 minutes simulated time)
                         Thread.Sleep(5000);
+                        
                         foreach (var binId in binIdsToRefil)
                         {
                             List<KeyValuePair<string, string>> binSpParams = new List<KeyValuePair<string, string>>();
@@ -172,21 +190,25 @@ namespace SimulationTool
                     {
                         UpdateRunner(true);
                         runnerAvailable = false;
-                        t.Start();
+                        runnerThread.Start();
                     }
 
-                }                
+                }
 
-                // start lamp
                 ExecuteStoredProcedure("start_new_lamp", spParams);
+                
                 // wait
                 // finish lamp
                 Thread.Sleep(workerTimeMS);
                 ExecuteStoredProcedure("finish_lamp", spParams);
                 bins = GetBins();
-            }            
+            }
         }
 
+        // FUNCTION : UpdateRunner
+        // DESCRIPTION : Updates runner state in DB
+        // PARAMETERS : bool busyFlag - runner state flag
+        // RETURNS : nothing
         private void UpdateRunner(bool busyFlag)
         {
             int busyBit = 0;
@@ -196,6 +218,20 @@ namespace SimulationTool
             }
             string updateRunnerQuery = "UPDATE Runner SET isRunning = " + busyBit + " WHERE Id = " + RunnerId;
             ExecuteNonQuery(updateRunnerQuery);
+        }
+
+        // FUNCTION : stopWSbutton_Click
+        // DESCRIPTION : Stops running workstation and closes app
+        // PARAMETERS : object sender - event sender
+        //              EventArgs e - event args
+        // RETURNS : nothing
+        private void stopWSbutton_Click(object sender, EventArgs e)
+        {
+            if (runnerThread.IsAlive)
+                runnerThread.Suspend();
+            if (lampMakeThread.IsAlive)
+                lampMakeThread.Suspend();
+            Application.Exit();
         }
 
 

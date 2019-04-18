@@ -32,6 +32,7 @@
             this.empTypeComboBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.startLampsButton = new System.Windows.Forms.Button();
+            this.stopWSbutton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // createWorkstationButton
@@ -72,11 +73,22 @@
             this.startLampsButton.UseVisualStyleBackColor = true;
             this.startLampsButton.Click += new System.EventHandler(this.startLampsButton_Click);
             // 
+            // stopWSbutton
+            // 
+            this.stopWSbutton.Location = new System.Drawing.Point(37, 229);
+            this.stopWSbutton.Name = "stopWSbutton";
+            this.stopWSbutton.Size = new System.Drawing.Size(396, 34);
+            this.stopWSbutton.TabIndex = 4;
+            this.stopWSbutton.Text = "Stop workstation";
+            this.stopWSbutton.UseVisualStyleBackColor = true;
+            this.stopWSbutton.Click += new System.EventHandler(this.stopWSbutton_Click);
+            // 
             // SimulationTool
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(480, 459);
+            this.Controls.Add(this.stopWSbutton);
             this.Controls.Add(this.startLampsButton);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.empTypeComboBox);
@@ -94,6 +106,7 @@
         private System.Windows.Forms.ComboBox empTypeComboBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button startLampsButton;
+        private System.Windows.Forms.Button stopWSbutton;
     }
 }
 

@@ -429,20 +429,25 @@ CREATE PROCEDURE sp_updateKanbanInfo
 AS
 BEGIN
 	DECLARE @workstationId	INT
-	DECLARE @completedTrays INT = 0
-	DECLARE @completedLamps INT = 0
-	DECLARE @testedLamps	INT = 0
-	DECLARE @defectedLamps	INT = 0
-	DECLARE @defectRate		DECIMAL(4,2) = 0
+	DECLARE @completedTrays INT
+	DECLARE @completedLamps INT
+	DECLARE @testedLamps	INT
+	DECLARE @defectedLamps	INT
+	DECLARE @defectRate		DECIMAL(4,2)
 
 	DECLARE ws_cursor CURSOR FOR
 	SELECT [Id] FROM [AdvSqlProjectDB].[dbo].[Workstation] WITH (NOLOCK)
 
 	OPEN ws_cursor  
-	FETCH NEXT FROM ws_cursor INTO @workstationId  
+	FETCH NEXT FROM ws_cursor INTO @workstationId
 
 	WHILE @@FETCH_STATUS = 0  
 	BEGIN
+		SET @completedTrays = 0
+		SET @completedLamps = 0
+		SET @testedLamps = 0
+		SET @defectedLamps = 0
+		SET @defectRate = 0
 		--get values for workstation
 		SET @completedTrays = (	SELECT COUNT([Id]) FROM [AdvSqlProjectDB].[dbo].[Tray] WITH (NOLOCK)
 								WHERE [WorkstationId] = @workstationId
